@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense</title>
+</head>
+<body>
+    <form id="expense">
+        Choose expense amount: <input type="number" id="amount"><br><br>
+        Choose description: <input type="text" id="description"><br><br>
+        <label for="category">Choose a Category:</label>
+        <select id="category" name="category">
+            <option value="food">Food</option>
+            <option value="petrol">Petrol</option>
+            <option value="cinema">Cinema</option>
+            <!-- Additional categories -->
+            <option value="groceries">Groceries</option>
+            <option value="utilities">Utilities</option>
+            <option value="clothing">Clothing</option>
+            <option value="electronics">Electronics</option>
+            <option value="travel">Travel</option>
+        </select>
+        <button type="submit">Add Expense</button>
+    </form>
+    <button id="rzy_btn">Buy Premium Membership</button>
+    <div id="premiumMessage" style="display: none; color: green;"></div>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <ul id="addedexpense"></ul>
+    <ul id="leaderboard"></ul>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
+    <script src="expense.js"></script>
+</body>
+</html>

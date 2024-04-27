@@ -4,7 +4,10 @@ const form = document.getElementById('expense');
 form.addEventListener('submit', addexpense);
 const deleteexpense = document.getElementById("addedexpense");
 deleteexpense.addEventListener('click', deleteExpense);
-window.addEventListener("DOMContentLoaded", showexpense);
+window.addEventListener("DOMContentLoaded", () => {
+    const page = 1; // You can change this to fetch different pages
+    showexpense(page);
+});
 const showfileUrls = document.getElementById('expensefiles');
 async function addexpense(event){
    event.preventDefault();
@@ -43,24 +46,62 @@ async function displayexpense(obj){
     ul.appendChild(li);
 }
 
-async function showexpense(){
+async function showexpense(page) {
     hidePremiumButton();
     showLeaderBoard();
-    const token = localStorage.getItem('token');
-    
-    try{
-        const details  = await axios.get(link, {headers: {"Authorization" : token}});
-        console.log(details);
-        details.data.forEach(element=>{
-           console.log(element);
-           displayexpense(element);
-        })
-        }
-        catch(err){
-            console.log(err);
-        }
-    
+
+    try {
+        const details = await axios.get(`${link}/expense?page=${page}`);
+        const expenses = details.data.expenses;
+
+        // Clear existing expenses on the webpage
+        const expenseList = document.getElementById('expenseList');
+        expenseList.innerHTML = '';
+
+        // Iterate through expenses and create HTML elements
+        expenses.forEach(expense => {
+            displayexpense(expense)
+        });
+
+        const totalExpenses = details.data.totalExpenses;
+        console.log(totalExpenses);
+        updatePaginationButtons(details.data.currentPage, details.data.totalPages, totalExpenses);
+
+    } catch (err) {
+        console.error(err);
+    }
 }
+
+function updatePaginationButtons(currentPage, totalPages, totalExpenses) {
+    const paginationButtons = document.getElementById('paginationButtons');
+    paginationButtons.innerHTML = '';
+
+    // Create previous page button if not on the first page
+    if (currentPage > 1) {
+        const prevButton = createPaginationButton(currentPage - 1);
+        paginationButtons.appendChild(prevButton);
+    }
+
+    // Create current page button
+    const currentPageButton = createPaginationButton(currentPage);
+    paginationButtons.appendChild(currentPageButton);
+
+    // Create next page button if not on the last page
+    if (currentPage < totalPages) {
+        const nextButton = createPaginationButton(currentPage + 1);
+        paginationButtons.appendChild(nextButton);
+    }
+}
+
+function createPaginationButton(page) {
+    const button = document.createElement('button');
+    button.textContent = page;
+    button.addEventListener('click', () => {
+        showexpense(page);
+    });
+    return button;
+}
+
 
 async function deleteExpense(event){
 
@@ -179,11 +220,13 @@ async function download(token){
     await axios.get("http://localhost:3000/download", { headers: { "Authorization": token } })
     .then((response) =>{
         if((response.status===200)){
+          
             var a = document.createElement("a");
             a.href = response.data.fileUrl;
             a.download = "myexpense.csv";
             a.click();
             previousFiles(token);
+            
         }else{
             throw new Error(response.data.message);
             
@@ -200,9 +243,9 @@ async function previousFiles(token){
             console.log(response.data);
             const previousFiles = response.data;
             const fileListElement = document.getElementById('previousDownloads');
-            // Clear existing list items
+            
             fileListElement.innerHTML = '';
-            // Create list items for each previous file URL
+            fileListElement.innerHTML += '<h2>Previous Downloads</h2>';
             previousFiles.forEach(file => {
                 const listItem = document.createElement('li');
                 const downloadLink = document.createElement('a');

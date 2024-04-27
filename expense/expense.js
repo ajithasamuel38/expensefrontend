@@ -5,7 +5,7 @@ form.addEventListener('submit', addexpense);
 const deleteexpense = document.getElementById("addedexpense");
 deleteexpense.addEventListener('click', deleteExpense);
 window.addEventListener("DOMContentLoaded", showexpense);
-
+const showfileUrls = document.getElementById('expensefiles');
 async function addexpense(event){
    event.preventDefault();
    const amount = event.target.amount.value;
@@ -164,18 +164,57 @@ async function showLeaderBoard(){
     document.getElementById('premiumMessage').appendChild(inputElement);
     const viewExpenseBtn = document.createElement('input');
     viewExpenseBtn.type = "button";
-    viewExpenseBtn.value = 'View Expense Table';
+    viewExpenseBtn.value = 'DownloadExpense';
+    viewExpenseBtn.id = "downloadExpense"
+    document.getElementById('premiumMessage').appendChild(viewExpenseBtn);
     viewExpenseBtn.onclick = async () => {
         const token = localStorage.getItem('token');
-        // Check if the user is a premium user
-        /*const response = await axios.get("http://localhost:3000/check-premium-status", { headers: { "Authorization": token } });
-        if (response.data.isPremium) {*/
-            // Redirect the user to view the expense table
-            window.location.href = "/reporttable/index.html";
-        /*} else {
-            alert("You need to be a premium user to view the expense table.");
-        }*/
+        download(token);
+       
     }
-    document.getElementById('premiumMessage').appendChild(viewExpenseBtn);
+    
 }
 
+async function download(token){
+    await axios.get("http://localhost:3000/download", { headers: { "Authorization": token } })
+    .then((response) =>{
+        if((response.status===200)){
+            var a = document.createElement("a");
+            a.href = response.data.fileUrl;
+            a.download = "myexpense.csv";
+            a.click();
+            previousFiles(token);
+        }else{
+            throw new Error(response.data.message);
+            
+        }
+       
+    }).catch((err)=>{
+        console.log(err);
+        alert(err);
+    })
+}
+
+async function previousFiles(token){
+            await axios.get("http://localhost:3000/download/fileUrl", { headers: { "Authorization": token } }).then((response)=>{
+            console.log(response.data);
+            const previousFiles = response.data;
+            const fileListElement = document.getElementById('previousDownloads');
+            // Clear existing list items
+            fileListElement.innerHTML = '';
+            // Create list items for each previous file URL
+            previousFiles.forEach(file => {
+                const listItem = document.createElement('li');
+                const downloadLink = document.createElement('a');
+                downloadLink.href = file.FileUrl;
+                downloadLink.textContent = `File ${file.id}`;
+                downloadLink.download = '';
+                listItem.appendChild(downloadLink);
+                fileListElement.appendChild(listItem);
+           })
+        }).catch((err) =>{
+            console.log(err)
+           })
+           
+
+    }

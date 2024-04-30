@@ -2,13 +2,30 @@ const link = "http://localhost:3000/expense/expensetable";
 
 const form = document.getElementById('expense');
 form.addEventListener('submit', addexpense);
-const deleteexpense = document.getElementById("addedexpense");
-deleteexpense.addEventListener('click', deleteExpense);
+const deleteButtons = document.querySelectorAll('.delete');
+console.log(deleteButtons);
+deleteButtons.forEach(button => {
+    console.log(button);
+    button.addEventListener('click', deleteExpense);
+});
 window.addEventListener("DOMContentLoaded", () => {
+    let expensesPerPage = localStorage.getItem('expensesPerPage');
+    if (!expensesPerPage || expensesPerPage > 5) {
+        expensesPerPage = '5'; // Set default to 5
+        localStorage.setItem('expensesPerPage', expensesPerPage);
+    }
     const page = 1; // You can change this to fetch different pages
     showexpense(page);
 });
-const showfileUrls = document.getElementById('expensefiles');
+
+// Function to handle changing expenses per page
+function updateExpensesPerPage() {
+    const expensesPerPage = document.getElementById('expensesPerPage').value;
+    localStorage.setItem('expensesPerPage', expensesPerPage);
+    const currentPage = 1;
+    showexpense(currentPage); // Reload expenses for the first page
+}
+
 async function addexpense(event){
    event.preventDefault();
    const amount = event.target.amount.value;
@@ -33,7 +50,8 @@ async function addexpense(event){
 
 async function displayexpense(obj){
     const {id, amount, description, category} = obj;
-    const ul = document.getElementById('addedexpense');
+    const expenseList = document.getElementById('expenseList');
+    //ul.innerHTML = '';
     const li = document.createElement('li');
     li.innerHTML = `${amount} - ${description} - ${category}`;
     let btn = document.createElement('button');
@@ -42,23 +60,27 @@ async function displayexpense(obj){
     btn.textContent = "Delete Expense";
     btn.className ='delete';
     li.appendChild(btn);
-
-    ul.appendChild(li);
+    expenseList.appendChild(li);
+    btn.addEventListener('click', deleteExpense);
 }
 
 async function showexpense(page) {
+    const expensesPerPage = localStorage.getItem('expensesPerPage') || 5; // Default to 5 if preference not set
     hidePremiumButton();
     showLeaderBoard();
+  
 
     try {
-        const details = await axios.get(`${link}/expense?page=${page}`);
+        const offset = (page - 1) * expensesPerPage;
+        const details = await axios.get(`${link}/expense?page=${page}&limit=${expensesPerPage}&offset=${offset}`);
+        console.log(details);
         const expenses = details.data.expenses;
-
-        // Clear existing expenses on the webpage
+        console.log(expenses);
+        
         const expenseList = document.getElementById('expenseList');
         expenseList.innerHTML = '';
+        console.log(expenseList);
 
-        // Iterate through expenses and create HTML elements
         expenses.forEach(expense => {
             displayexpense(expense)
         });
@@ -66,6 +88,9 @@ async function showexpense(page) {
         const totalExpenses = details.data.totalExpenses;
         console.log(totalExpenses);
         updatePaginationButtons(details.data.currentPage, details.data.totalPages, totalExpenses);
+
+        const token = localStorage.getItem('token');
+    
 
     } catch (err) {
         console.error(err);
@@ -102,10 +127,10 @@ function createPaginationButton(page) {
     return button;
 }
 
-
 async function deleteExpense(event){
 
     const token = localStorage.getItem('token');
+    console.log(event)
    
     if(event.target.classList.contains("delete")){
     const parentele = event.target.parentElement;
@@ -211,9 +236,7 @@ async function showLeaderBoard(){
     viewExpenseBtn.onclick = async () => {
         const token = localStorage.getItem('token');
         download(token);
-       
     }
-    
 }
 
 async function download(token){
@@ -258,6 +281,4 @@ async function previousFiles(token){
         }).catch((err) =>{
             console.log(err)
            })
-           
-
-    }
+}

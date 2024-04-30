@@ -24,19 +24,29 @@
         </select>
         <button type="submit">Add Expense</button>
     </form>
+    <!-- Expenses Per Page Selection -->
+    <label for="expensesPerPage">Expenses Per Page:</label>
+    <select id="expensesPerPage" onchange="updateExpensesPerPage()">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="30">30</option>
+        <!-- Add more options as needed -->
+    </select>
+    <!-- Premium Membership Button -->
     <button id="rzy_btn">Buy Premium Membership</button>
     <div id="premiumMessage" style="display: none; color: green;"></div>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <ul id="addedexpense"></ul>
-    <ul id="expenseList"></ul>
+    <ul id="expenseList">
+ 
+    </ul>
+    
     <div id="paginationButtons"></div>
     <ul id="leaderboard"></ul>
     <ul id="previousDownloads"></ul>
-    
-    
-    
-    
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.7/axios.min.js"></script>
     <script src="expense.js"></script>
+
 </body>
 </html>
